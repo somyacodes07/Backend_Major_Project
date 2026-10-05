@@ -1,0 +1,26 @@
+/**
+ * Standardized API response helper
+ */
+class ApiResponse {
+  constructor(statusCode, message = 'Success', data = null, meta = null) {
+    this.success = statusCode < 400;
+    this.statusCode = statusCode;
+    this.message = message;
+    if (data !== null) {
+      this.data = data;
+    }
+    if (meta !== null) {
+      this.meta = meta;
+    }
+  }
+
+  static success(res, message, data = null, meta = null, statusCode = 200) {
+    return res.status(statusCode).json(new ApiResponse(statusCode, message, data, meta));
+  }
+
+  static created(res, message, data = null, meta = null) {
+    return res.status(201).json(new ApiResponse(201, message, data, meta));
+  }
+}
+
+module.exports = ApiResponse;

@@ -1,0 +1,619 @@
+{
+  "info": {
+    "_postman_id": "crm-backend-major-project-api-v1",
+    "name": "Small Business CRM REST API",
+    "description": "Production REST API collection for Case Study 150: Small Business Customer Management (CRM). Supports full CRUD, search/filtering, interaction logging, purchases, and owner-only sales summary aggregation.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api",
+      "type": "string"
+    },
+    {
+      "key": "owner_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "staff_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "customerId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "interactionId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "00 - Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        },
+        "description": "Check if API service and database connectivity are healthy."
+      }
+    },
+    {
+      "name": "01 - Authentication",
+      "item": [
+        {
+          "name": "Login as Owner (Eleanor Vance)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.token) {",
+                  "    pm.collectionVariables.set('owner_token', res.data.token);",
+                  "    console.log('Saved owner_token to collection variables');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"owner@crm.com\",\n  \"password\": \"Owner@123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Authenticates as Owner. The test script automatically captures the JWT into the collection variable 'owner_token'."
+          }
+        },
+        {
+          "name": "Login as Staff (Sarah Jenkins)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.token) {",
+                  "    pm.collectionVariables.set('staff_token', res.data.token);",
+                  "    console.log('Saved staff_token to collection variables');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"sarah.staff@crm.com\",\n  \"password\": \"Staff@123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Authenticates as Staff. The test script automatically captures the JWT into the collection variable 'staff_token'."
+          }
+        },
+        {
+          "name": "Register New Staff User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"David Miller\",\n  \"email\": \"david.staff@crm.com\",\n  \"password\": \"Staff@123\",\n  \"role\": \"staff\",\n  \"phone\": \"+1 555-0155\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Get Current User Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{owner_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "profile"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 - Customers",
+      "item": [
+        {
+          "name": "Get All Customers (Paginated)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.customers && res.data.customers.length > 0) {",
+                  "    pm.collectionVariables.set('customerId', res.data.customers[0]._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{owner_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/customers?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["customers"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search Customers by Name / Company / Email",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{staff_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/customers?search=logistics",
+              "host": ["{{baseUrl}}"],
+              "path": ["customers"],
+              "query": [
+                { "key": "search", "value": "logistics" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Filter Customers by Tag (e.g. VIP)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{staff_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/customers?tag=VIP",
+              "host": ["{{baseUrl}}"],
+              "path": ["customers"],
+              "query": [
+                { "key": "tag", "value": "VIP" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Filter Customers by Status (e.g. active)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{staff_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/customers?status=active",
+              "host": ["{{baseUrl}}"],
+              "path": ["customers"],
+              "query": [
+                { "key": "status", "value": "active" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Filter by Last Contact Date Range",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{staff_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/customers?minLastContactDate=2026-01-01&sort=lastContactDate:desc",
+              "host": ["{{baseUrl}}"],
+              "path": ["customers"],
+              "query": [
+                { "key": "minLastContactDate", "value": "2026-01-01" },
+                { "key": "sort", "value": "lastContactDate:desc" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Sort Customers by Total Spent (Highest First)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{staff_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/customers?sort=totalSpent:desc",
+              "host": ["{{baseUrl}}"],
+              "path": ["customers"],
+              "query": [
+                { "key": "sort", "value": "totalSpent:desc" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Customer Stats (Status & Tag Breakdown)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{staff_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/customers/stats/summary",
+              "host": ["{{baseUrl}}"],
+              "path": ["customers", "stats", "summary"]
+            }
+          }
+        },
+        {
+          "name": "Create New Customer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{staff_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Summit Peak Equipment\",\n  \"email\": \"procurement@summitpeak.com\",\n  \"phone\": \"+1 303-555-0145\",\n  \"company\": \"Summit Peak Outfitting Co.\",\n  \"tags\": [\"Wholesale\", \"Outdoor\", \"Retail\"],\n  \"status\": \"lead\",\n  \"notes\": \"Met at Outdoor Retailer Expo 2026. Interested in private-label goods.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customers",
+              "host": ["{{baseUrl}}"],
+              "path": ["customers"]
+            }
+          }
+        },
+        {
+          "name": "Get Single Customer Details (with interactions & purchases)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{staff_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/customers/{{customerId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["customers", "{{customerId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Customer Record",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{staff_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"active\",\n  \"tags\": [\"VIP\", \"Wholesale\", \"Key-Account\"],\n  \"notes\": \"Upgraded to active key account status following contract signing.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customers/{{customerId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["customers", "{{customerId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Customer",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{owner_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/customers/{{customerId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["customers", "{{customerId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 - Interactions",
+      "item": [
+        {
+          "name": "Log Interaction for Customer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.interaction) {",
+                  "    pm.collectionVariables.set('interactionId', res.data.interaction._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{staff_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"meeting\",\n  \"summary\": \"Executive Q2 Strategy and Order Finalization\",\n  \"details\": \"Discussed delivery timelines and warehouse integration. Agreement reached on all points.\",\n  \"outcome\": \"successful\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customers/{{customerId}}/interactions",
+              "host": ["{{baseUrl}}"],
+              "path": ["customers", "{{customerId}}", "interactions"]
+            },
+            "description": "Logs an interaction for the specified customer. Automatically updates the customer's lastContactDate."
+          }
+        },
+        {
+          "name": "Get Customer Interactions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{staff_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/customers/{{customerId}}/interactions",
+              "host": ["{{baseUrl}}"],
+              "path": ["customers", "{{customerId}}", "interactions"]
+            }
+          }
+        },
+        {
+          "name": "Delete Interaction",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{owner_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/interactions/{{interactionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["interactions", "{{interactionId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 - Purchases",
+      "item": [
+        {
+          "name": "Record Customer Purchase",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{staff_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 3500,\n  \"items\": [\n    {\n      \"name\": \"Cloud CRM Enterprise Integration Module\",\n      \"quantity\": 1,\n      \"unitPrice\": 2500\n    },\n    {\n      \"name\": \"Dedicated Onboarding Training Package\",\n      \"quantity\": 1,\n      \"unitPrice\": 1000\n    }\n  ],\n  \"paymentMethod\": \"bank_transfer\",\n  \"paymentStatus\": \"paid\",\n  \"notes\": \"Wire transfer received and verified.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customers/{{customerId}}/purchases",
+              "host": ["{{baseUrl}}"],
+              "path": ["customers", "{{customerId}}", "purchases"]
+            }
+          }
+        },
+        {
+          "name": "Get Purchases for Customer",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{staff_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/customers/{{customerId}}/purchases",
+              "host": ["{{baseUrl}}"],
+              "path": ["customers", "{{customerId}}", "purchases"]
+            }
+          }
+        },
+        {
+          "name": "Get All Purchases (Company Wide)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{owner_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/purchases?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["purchases"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 - Sales Summary (Owner Only)",
+      "item": [
+        {
+          "name": "Get Sales Summary (As Owner -> 200 OK)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{owner_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/sales-summary",
+              "host": ["{{baseUrl}}"],
+              "path": ["sales-summary"]
+            },
+            "description": "Authorized request: Owner gets full company metrics, per-customer aggregation totals, monthly trends, and payment method breakdowns."
+          }
+        },
+        {
+          "name": "Get Sales Summary (As Staff -> 403 Forbidden RBAC Test)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{staff_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/sales-summary",
+              "host": ["{{baseUrl}}"],
+              "path": ["sales-summary"]
+            },
+            "description": "RBAC Verification: Staff access must be rejected with HTTP 403 Forbidden with message indicating only 'owner' role is permitted."
+          }
+        },
+        {
+          "name": "Get Sales Summary with Date Range Filter",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{owner_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/sales-summary?startDate=2026-01-01&endDate=2026-12-31&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["sales-summary"],
+              "query": [
+                { "key": "startDate", "value": "2026-01-01" },
+                { "key": "endDate", "value": "2026-12-31" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
