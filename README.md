@@ -329,13 +329,26 @@ JWT_EXPIRES_IN=7d
 CLIENT_URL=http://localhost:3000,http://localhost:5173
 ```
 
-### 3. Run the Development Server
+### 3. Run Automated Integration Tests
+Verify all 18 test criteria (Health check, Auth, Owner vs Staff RBAC on sales summary, root aliases, Customer CRUD, Interactions logging, Purchase aggregation):
+```bash
+npm test
+```
+
+### 4. Run the Backend API Server
 ```bash
 npm run dev
 # Or for standard production start:
 npm start
 ```
 The server will boot on `http://localhost:5000`. You can visit `http://localhost:5000/api/health` in your browser to verify it is online.
+
+### 5. Run the React Frontend (Optional / Suggested Deliverable)
+A responsive React client (Vite + React) is included in the `client/` folder:
+```bash
+npm run client
+```
+The web dashboard will open on `http://localhost:5173`. It features one-click demo login buttons for Owner and Staff, customer management, interaction logging, and the Owner sales analytics dashboard.
 
 ---
 

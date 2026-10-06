@@ -76,8 +76,9 @@ app.get('/', (req, res) => {
   });
 });
 
-// Mount all API routes under /api
+// Mount API routes under /api and also root / for direct specification compliance
 app.use('/api', apiRoutes);
+app.use('/', apiRoutes);
 
 // Handle 404 routes
 app.use(notFoundHandler);

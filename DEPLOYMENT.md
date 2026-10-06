@@ -1,25 +1,34 @@
-# Deployment Guide: MongoDB Atlas & Render
+# Deployment Guide: Small Business CRM (Full-Stack)
 
-This document provides a comprehensive, step-by-step walkthrough for manually configuring **MongoDB Atlas** and deploying your **Small Business CRM REST API** backend to **Render**.
+> **Case Study 150 — Major Project**  
+> Complete deployment walkthrough for hosting the **Express.js & MongoDB** backend on **Render / Railway** with **MongoDB Atlas**, and deploying the **React (Vite)** frontend on **Vercel / Netlify**.
 
 ---
 
-## 📋 Overview of Deployment Flow
+## 📋 Full-Stack Deployment Architecture
 
 ```
-+------------------------+      +---------------------------+      +--------------------------+
-|  1. MongoDB Atlas      |      |  2. GitHub Repository     |      |  3. Render Web Service   |
-|  - Create M0 Cluster   | ---> |  - Push code to GitHub    | ---> |  - Connect Repo          |
-|  - Create DB User      |      |  - Exclude .env via       |      |  - Set Environment Vars  |
-|  - Whitelist 0.0.0.0/0 |      |    .gitignore             |      |  - Build: npm install    |
-|  - Copy Connection URI |      |                           |      |  - Start: npm start      |
-+------------------------+      +---------------------------+      +--------------------------+
-                                                                                |
-                                                                                v
-                                                                   +--------------------------+
-                                                                   |  4. Live REST API        |
-                                                                   |  https://*.onrender.com  |
-                                                                   +--------------------------+
++-----------------------------------------------------------------------------------------+
+|                                    CLOUD ARCHITECTURE                                    |
++-----------------------------------------------------------------------------------------+
+|                                                                                         |
+|   1. DATABASE (MongoDB Atlas)                                                           |
+|      - Free M0 Shared Cluster                                                           |
+|      - Network Whitelist (0.0.0.0/0 for dynamic cloud IPs)                              |
+|      - Dedicated DB User (`crm_admin`)                                                  |
+|                                                                                         |
+|   2. BACKEND API (Render / Railway)                                                     |
+|      - Node.js runtime (Express REST API)                                               |
+|      - Port auto-configured (Render: 10000, Railway: auto)                              |
+|      - Env Vars: MONGODB_URI, JWT_SECRET, JWT_EXPIRES_IN, CLIENT_URL                    |
+|      - Live URL: https://crm-backend-api.onrender.com                                   |
+|                                                                                         |
+|   3. FRONTEND CLIENT (Vercel / Netlify)                                                 |
+|      - Vite + React monochrome SPA (directory: `client`)                                |
+|      - Env Var: VITE_API_URL=https://crm-backend-api.onrender.com/api                   |
+|      - Live URL: https://crm-client.vercel.app                                          |
+|                                                                                         |
++-----------------------------------------------------------------------------------------+
 ```
 
 ---
@@ -27,89 +36,80 @@ This document provides a comprehensive, step-by-step walkthrough for manually co
 ## 🗄 PART 1: Set Up MongoDB Atlas (Cloud Database)
 
 ### Step 1: Create an Account / Log In
-1. Navigate to [mongodb.com/cloud/atlas](https://www.mongodb.com/cloud/atlas).
+1. Go to [mongodb.com/cloud/atlas](https://www.mongodb.com/cloud/atlas).
 2. Sign in or create a free account.
 
 ### Step 2: Deploy a Free Shared Cluster
 1. On the Atlas dashboard, click **"Create"** or **"Build a Database"**.
-2. Select the **M0 (Free)** tier.
-3. Choose a Cloud Provider & Region (e.g., **AWS / Mumbai (ap-south-1)** or **AWS / Singapore**).
-4. Name your cluster (e.g., `CRM-Cluster`).
+2. Choose the **M0 (Free)** tier.
+3. Select Cloud Provider & Region (e.g., **AWS / Mumbai (ap-south-1)** or **AWS / Singapore**).
+4. Cluster Name: `CRM-Cluster`.
 5. Click **"Create Deployment"**.
 
 ---
 
-### Step 3: Create a Database User
-1. In the left navigation menu under **Security**, click **"Database Access"**.
-2. Click the green **"Add New Database User"** button.
-3. Configure the user:
+### Step 3: Create Database User
+1. Under **Security** in the left menu, click **"Database Access"**.
+2. Click **"Add New Database User"**.
+3. Configure:
    - **Authentication Method:** Password
-   - **Username:** `crm_admin` (or your choice)
-   - **Password:** Click *Autogenerate Secure Password* or type a secure password (e.g., `CrmSecurePass2026!`).
-     > ⚠️ **Important:** If your password contains special characters like `@`, `#`, `:`, or `/`, make sure to URL-encode them, or stick to alphanumeric characters + `!` or `_`.
-   - **Database User Privileges:** Select **"Read and write to any database"** (or Atlas admin).
+   - **Username:** `crm_admin`
+   - **Password:** Autogenerate or type a strong password (e.g., `CrmSecurePass2026!`).
+     > ⚠️ *Avoid reserved characters (`@`, `:`, `/`) in passwords to prevent URL-encoding connection errors.*
+   - **User Privileges:** Select **"Read and write to any database"** (or Atlas admin).
 4. Click **"Add User"**.
 
 ---
 
 ### Step 4: Configure Network Access (IP Whitelist)
-Because Render dynamically assigns outgoing IP addresses to container instances, you must allow cloud access:
-1. In the left menu under **Security**, click **"Network Access"**.
+Cloud hosts like Render and Railway assign dynamic IP addresses. You must allow cloud access:
+1. Under **Security**, click **"Network Access"**.
 2. Click **"Add IP Address"**.
-3. Click the button **"Allow Access from Anywhere"** (this sets `0.0.0.0/0`).
-4. Enter a comment like `Render Cloud Access`.
-5. Click **"Confirm"**. Wait ~30 seconds for the status to show **Active**.
+3. Click **"Allow Access from Anywhere"** (sets CIDR `0.0.0.0/0`).
+4. Comment: `Cloud Deployment Access`.
+5. Click **"Confirm"**. Wait ~30 seconds until status shows **Active**.
 
 ---
 
-### Step 5: Get Your MongoDB Connection String
-1. In the left menu, click **"Database"** (Clusters view).
-2. Click the **"Connect"** button next to your cluster.
-3. Choose **"Drivers"** (Node.js).
-4. Under **"Install your driver"**, ensure `Node.js` and version `5.5 or later` is selected.
-5. Copy the connection string displayed. It will look like this:
+### Step 5: Copy MongoDB Connection String
+1. Under **Deployments**, click **"Database"**.
+2. Click **"Connect"** next to your cluster.
+3. Select **"Drivers"** (Node.js).
+4. Under "Install your driver", ensure `Node.js` is selected.
+5. Copy the connection string:
    ```text
    mongodb+srv://crm_admin:<password>@crm-cluster.xxxx.mongodb.net/?retryWrites=true&w=majority
    ```
-6. Replace `<password>` with your database user password, and add your database name `crm_database` before the `?`:
+6. Replace `<password>` with your database password, and specify the database name `crm_database` before the query parameters:
    ```text
    mongodb+srv://crm_admin:CrmSecurePass2026!@crm-cluster.xxxx.mongodb.net/crm_database?retryWrites=true&w=majority
    ```
-7. Keep this connection string safe — you will use it in Render and in your local `.env`.
 
 ---
 
-## 💻 PART 2: Push Your Code to GitHub
+## 💻 PART 2: Push Code to GitHub
 
-Render deploys directly from your Git repository. Ensure your code is version-controlled and pushed to GitHub:
+Render, Railway, and Vercel all build and deploy directly from your GitHub repository.
 
-### Step 1: Initialize Git and Commit
-Open PowerShell or your terminal in `Major_Project`:
-```powershell
-# Verify you are in the project folder
-cd c:\Users\Somyajeet\Code\Backend\Major_Project
-
-# Initialize git if not already initialized
-git init
-
-# Verify .env is ignored (crucial for security!)
-git status
-
-# Stage all files
-git add .
-
-# Create initial commit
-git commit -m "feat: complete small business CRM backend with RBAC and sales aggregation"
+### Step 1: Verify Pre-Flight Tests Locally
+Run the automated test suite to ensure all 18 criteria pass:
+```bash
+npm test
 ```
 
-### Step 2: Create a GitHub Repository & Push
-1. Go to [github.com/new](https://github.com/new).
-2. Repository Name: `small-business-crm-backend` (or `Major_Project`).
-3. Set Visibility: **Public** or **Private**.
-4. Do **not** check "Initialize with README" (we already have one).
-5. Click **"Create repository"**.
-6. Run the commands shown by GitHub to push:
-```powershell
+### Step 2: Push to GitHub
+```bash
+# Navigate to the project root directory
+cd "/Users/somyajeet/Git/college projects/Backend_Major_Project"
+
+# Initialize git if needed and verify .env is ignored
+git status
+
+# Stage and commit all changes
+git add .
+git commit -m "feat: complete small business CRM full-stack system"
+
+# Push to your repository
 git branch -M main
 git remote add origin https://github.com/<your-username>/<your-repo-name>.git
 git push -u origin main
@@ -117,155 +117,144 @@ git push -u origin main
 
 ---
 
-## ☁️ PART 3: Deploy to Render (Manual Step-by-Step)
+## ☁️ PART 3: Deploy Backend on Render
 
-### Step 1: Create a Render Account
-1. Go to [render.com](https://render.com).
-2. Sign in using your **GitHub account**.
+### Step 1: Create Web Service
+1. Log in to [render.com](https://render.com) using your GitHub account.
+2. In the dashboard, click **"New +"** -> **"Web Service"**.
+3. Select **"Build and deploy from a Git repository"** and click **Next**.
+4. Choose your repository and click **"Connect"**.
 
-### Step 2: Create a New Web Service
-1. In the Render Dashboard, click the **"New +"** button at the top right.
-2. Select **"Web Service"**.
-3. Choose **"Build and deploy from a Git repository"** and click **Next**.
-4. Find your repository (`small-business-crm-backend` or `Major_Project`) and click **"Connect"**.
-
----
-
-### Step 3: Configure Web Service Settings
-Fill in the deployment configuration form:
-
-| Field | Recommended Value | Explanation |
+### Step 2: Configure Web Service
+| Field | Value | Notes |
 | :--- | :--- | :--- |
-| **Name** | `crm-backend-api` | Will create URL: `https://crm-backend-api.onrender.com` |
-| **Region** | `Singapore (Southeast Asia)` or `Frankfurt` | Select region closest to you or your users. |
-| **Branch** | `main` | Production branch to deploy from. |
-| **Root Directory** | *(Leave blank)* | Since `package.json` is at the root. |
-| **Runtime** | `Node` | Runtime environment. |
-| **Build Command** | `npm install` | Installs production dependencies. |
-| **Start Command** | `npm start` | Runs `node src/server.js`. |
-| **Instance Type** | **Free** | Generous free tier for major project evaluations. |
+| **Name** | `crm-backend-api` | Yields `https://crm-backend-api.onrender.com` |
+| **Region** | `Singapore` or `Frankfurt` | Select closest to you |
+| **Branch** | `main` | Production branch |
+| **Root Directory** | *(Leave blank)* | Root `package.json` |
+| **Runtime** | `Node` | Node.js environment |
+| **Build Command** | `npm install` | Installs dependencies |
+| **Start Command** | `npm start` | Runs `node src/server.js` |
+| **Instance Type** | **Free** | Generous free tier |
 
----
-
-### Step 4: Add Environment Variables
-Scroll down to the **"Environment Variables"** section and click **"Add Environment Variable"** for each:
+### Step 3: Add Environment Variables
+Scroll to **"Environment Variables"** and add:
 
 | Key | Value | Notes |
 | :--- | :--- | :--- |
-| `NODE_ENV` | `production` | Enables production security and log format. |
-| `PORT` | `10000` | Render default port (injected automatically, but good to define). |
-| `MONGODB_URI` | `mongodb+srv://crm_admin:YourPass@.../crm_database?retryWrites=true&w=majority` | Your MongoDB Atlas connection URI from Part 1. |
-| `JWT_SECRET` | `crm_super_secure_jwt_secret_key_prod_2026_xyz987` | A secure random 32+ character string. |
-| `JWT_EXPIRES_IN` | `7d` | Token validity duration. |
-| `CLIENT_URL` | `*` | Or specify frontend URLs (e.g. `https://my-crm.vercel.app`). |
+| `NODE_ENV` | `production` | Enables production optimizations |
+| `MONGODB_URI` | `mongodb+srv://crm_admin:YourPass@...` | Atlas connection string from Part 1 |
+| `JWT_SECRET` | `crm_super_secure_jwt_secret_key_prod_2026_xyz987` | Strong 32+ char secret |
+| `JWT_EXPIRES_IN` | `7d` | Token validity |
+| `CLIENT_URL` | `*` | Or specify frontend domain once deployed |
 
----
-
-### Step 5: Deploy the Service
-1. Click the blue **"Create Web Service"** button.
-2. Render will allocate a build container, clone your GitHub repo, run `npm install`, and start the server with `npm start`.
-3. Watch the deploy logs in the Render terminal. You should see:
-   ```text
-   ==> Building service...
-   ==> Running 'npm install'
-   ==> Starting service with 'npm start'
-   [Database] MongoDB Connected successfully: crm-cluster-xxx / crm_database
-   ====================================================
-   🚀 CRM Backend Server running in [production] mode
-   📡 Listening on http://localhost:10000
-   🔍 Health Check: http://localhost:10000/api/health
-   ====================================================
-   ==> Your service is live at https://crm-backend-api.onrender.com
-   ```
-
----
-
-## 🌱 PART 4: Seed Initial Data into MongoDB Atlas
-
-To evaluate the API with pre-populated customers, interactions, and sales records:
-
-### Method 1: Run Seed Script Locally (Recommended & Fast)
-1. Open your local `.env` file in VS Code / IDE.
-2. Temporarily set `MONGODB_URI` to your live **MongoDB Atlas connection string**:
-   ```env
-   MONGODB_URI=mongodb+srv://crm_admin:YourPassword@cluster0.xxx.mongodb.net/crm_database?retryWrites=true&w=majority
-   ```
-3. Run the seed script in your local terminal:
-   ```bash
-   npm run seed
-   ```
-4. You will see all 3 accounts, 10 customers, 11 interactions, and 11 purchase records populated in Atlas, followed by the sales aggregation table!
-5. Revert your local `.env` if desired.
-
-### Method 2: Run via Render Shell
-1. Go to your Render Web Service dashboard.
-2. In the left menu, click **"Shell"**.
-3. In the web terminal, type:
-   ```bash
-   npm run seed
-   ```
-4. Press Enter. The script will execute directly within Render!
-
----
-
-## 🧪 PART 5: Testing Your Live Render API with Postman
-
-1. Open **Postman** (or Thunder Client).
-2. Open the imported collection: **Small Business CRM REST API**.
-3. Click on the collection name -> Go to the **Variables** tab.
-4. Update the `baseUrl` variable:
-   - **Initial Value:** `https://<your-service-name>.onrender.com/api`
-   - **Current Value:** `https://<your-service-name>.onrender.com/api`
-5. Test the endpoints in sequence:
-
-### 1. Health Check
-- Request: `GET {{baseUrl}}/health`
-- Expected: `200 OK`
+### Step 4: Deploy and Verify
+Click **"Create Web Service"**. Once the deployment log displays:
+```text
+==> Your service is live at https://crm-backend-api.onrender.com
+```
+Test the health endpoint in your browser:
+```text
+https://crm-backend-api.onrender.com/api/health
+```
+Expected output:
 ```json
 {
   "status": "OK",
-  "timestamp": "2026-10-06T...",
-  "uptime": 45.2,
   "service": "Small Business CRM REST API",
   "version": "1.0.0"
 }
 ```
 
-### 2. Login as Owner
-- Request: `POST {{baseUrl}}/auth/login`
-- Body:
-```json
-{
-  "email": "owner@crm.com",
-  "password": "Owner@123"
-}
-```
-- The test script will automatically capture the token into `{{owner_token}}`.
+---
 
-### 3. Verify Owner-Only Sales Summary Aggregation
-- Request: `GET {{baseUrl}}/sales-summary`
-- Header: `Authorization: Bearer {{owner_token}}`
-- Expected: `200 OK` containing total gross revenue, top customers, payment method breakdowns, and per-customer sales.
+## 🚂 ALTERNATIVE: Deploy Backend on Railway
 
-### 4. Verify Role Authorization Rejection (RBAC)
-- Login as staff (`sarah.staff@crm.com` / `Staff@123`).
-- Attempt: `GET {{baseUrl}}/sales-summary` with `Authorization: Bearer {{staff_token}}`.
-- Expected Response: `403 Forbidden`
-```json
-{
-  "success": false,
-  "statusCode": 403,
-  "message": "Access denied. Role 'staff' is not authorized to access this resource. Allowed roles: [owner]"
-}
-```
+If you prefer using **Railway** instead of Render:
+1. Log in to [railway.app](https://railway.app) with GitHub.
+2. Click **"New Project"** -> **"Deploy from GitHub repo"** -> Select your repo.
+3. In service settings, add the variables under **"Variables"**:
+   - `MONGODB_URI`
+   - `JWT_SECRET`
+   - `JWT_EXPIRES_IN=7d`
+   - `NODE_ENV=production`
+   - `CLIENT_URL=*`
+4. Under **"Settings"** -> **"Networking"**, click **"Generate Domain"** to obtain your public URL.
+
+---
+
+## 🌱 PART 4: Seed Initial Data into MongoDB Atlas
+
+Populate Atlas with realistic customers, interactions, and purchase transactions:
+
+### Method 1: Local Terminal (Fastest)
+1. Open your local `.env` file and set `MONGODB_URI` to your Atlas string:
+   ```env
+   MONGODB_URI=mongodb+srv://crm_admin:YourPass@cluster0.xxx.mongodb.net/crm_database?retryWrites=true&w=majority
+   ```
+2. Run the seed script:
+   ```bash
+   npm run seed
+   ```
+3. All 3 accounts, 10 customers, 11 interactions, and 11 purchases will be seeded directly to MongoDB Atlas.
+
+### Method 2: Render Shell
+1. Go to your Render Web Service dashboard -> click **"Shell"** in the left menu.
+2. Type `npm run seed` and press Enter.
+
+---
+
+## 🚀 PART 5: Deploy Frontend on Vercel / Netlify
+
+### Option A: Deploy on Vercel (Recommended)
+1. Log in to [vercel.com](https://vercel.com) using your GitHub account.
+2. Click **"Add New..."** -> **"Project"**.
+3. Select your GitHub repository.
+4. In the configuration screen:
+   - **Framework Preset:** Vite
+   - **Root Directory:** Click **Edit** and select **`client`**
+   - **Build Command:** `npm run build` (auto-detected)
+   - **Output Directory:** `dist` (auto-detected)
+5. **Environment Variables**:
+   Add the following environment variable:
+   - **Key:** `VITE_API_URL`
+   - **Value:** `https://crm-backend-api.onrender.com/api` *(Your live Render backend URL with `/api` suffix)*
+6. Click **"Deploy"**.
+7. Vercel will build and assign a URL (e.g., `https://crm-client.vercel.app`).
+
+### Option B: Deploy on Netlify
+1. Log in to [netlify.com](https://netlify.com).
+2. Click **"Add new site"** -> **"Import an existing project"** -> GitHub.
+3. Select the repository:
+   - **Base directory:** `client`
+   - **Build command:** `npm run build`
+   - **Publish directory:** `client/dist`
+4. Under **"Environment variables"**, add:
+   - `VITE_API_URL` = `https://crm-backend-api.onrender.com/api`
+5. Click **"Deploy site"**.
+
+---
+
+## 🧪 PART 6: Live API Verification with Postman
+
+1. Open **Postman** (or Thunder Client).
+2. Open collection: **Small Business CRM REST API** ([`postman/CRM_Backend_API.postman_collection.json`](file:///Users/somyajeet/Git/college%20projects/Backend_Major_Project/postman/CRM_Backend_API.postman_collection.json)).
+3. Under the **Variables** tab, set:
+   - `baseUrl` = `https://<your-service>.onrender.com/api`
+4. Test:
+   - **Health:** `GET {{baseUrl}}/health` &rarr; `200 OK`
+   - **Owner Login:** `POST {{baseUrl}}/auth/login` (`owner@crm.com` / `Owner@123`) &rarr; Auto-captures `{{owner_token}}`
+   - **Sales Summary (Owner):** `GET {{baseUrl}}/sales-summary` &rarr; `200 OK` with full aggregations
+   - **Sales Summary (Staff):** `GET {{baseUrl}}/sales-summary` with `{{staff_token}}` &rarr; `403 Forbidden` (RBAC validated)
 
 ---
 
 ## ❓ Troubleshooting Common Deployment Issues
 
-| Problem | Cause | Solution |
+| Problem | Root Cause | Solution |
 | :--- | :--- | :--- |
-| `MongooseServerSelectionError: connect ECONNREFUSED` | Atlas Network Access not configured. | Go to Atlas -> **Network Access** -> Click **"Add IP Address"** -> select **"Allow Access from Anywhere"** (`0.0.0.0/0`). |
-| `MongoServerError: bad auth : authentication failed` | Incorrect username or password in `MONGODB_URI`. | Verify user credentials under Atlas -> **Database Access**. Re-generate password without ambiguous symbols. |
-| Render service shows `Deploy Failed` | Missing environment variable or build command error. | Go to Render -> **Logs** to inspect the error. Verify `MONGODB_URI` and `JWT_SECRET` are added. |
-| First request after 15 minutes is slow (~50 seconds) | Render Free Tier spins down inactive instances. | This is normal behavior for free containers. Subsequent requests respond instantly (<100ms). |
+| `MongooseServerSelectionError: connect ECONNREFUSED` | Atlas Network Access not configured. | In Atlas, go to **Network Access** &rarr; **Add IP Address** &rarr; select **Allow Access from Anywhere** (`0.0.0.0/0`). |
+| `MongoServerError: bad auth : authentication failed` | Incorrect password in `MONGODB_URI`. | Verify credentials in Atlas **Database Access**. Avoid symbols like `@` or `:` in passwords without URL encoding. |
+| CORS error in browser on frontend | `CLIENT_URL` doesn't match frontend domain. | In Render, set `CLIENT_URL=*` or specify your Vercel URL `https://crm-client.vercel.app`. |
+| Render instance takes 50s on first load | Render free tier spins down inactive web services after 15 min. | Expected behavior on free tier. Subsequent calls respond in <100ms. |
+| Vite frontend shows network errors | `VITE_API_URL` missing or incorrect. | Ensure `VITE_API_URL` in Vercel points to `https://<backend>.onrender.com/api` (with `/api` suffix). |
