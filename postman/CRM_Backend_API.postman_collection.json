@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "crm-backend-major-project-api-v1",
     "name": "Small Business CRM REST API",
-    "description": "Production REST API collection for Case Study 150: Small Business Customer Management (CRM). Supports full CRUD, search/filtering, interaction logging, purchases, and owner-only sales summary aggregation.",
+    "description": "Production REST API collection for Case Study 150: Small Business Customer Management (CRM). Supports full CRUD, search/filtering, interaction logging, purchases in INR (₹), and owner-only sales summary aggregation.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -50,7 +50,7 @@
       "name": "01 - Authentication",
       "item": [
         {
-          "name": "Login as Owner (Eleanor Vance)",
+          "name": "Login as Owner (Rajesh Sharma)",
           "event": [
             {
               "listen": "test",
@@ -87,7 +87,7 @@
           }
         },
         {
-          "name": "Login as Staff (Sarah Jenkins)",
+          "name": "Login as Staff (Priya Patel)",
           "event": [
             {
               "listen": "test",
@@ -113,7 +113,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"sarah.staff@crm.com\",\n  \"password\": \"Staff@123\"\n}"
+              "raw": "{\n  \"email\": \"priya.staff@crm.com\",\n  \"password\": \"Staff@123\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/auth/login",
@@ -124,7 +124,7 @@
           }
         },
         {
-          "name": "Register New Staff User",
+          "name": "Register New Staff User (Amit Verma)",
           "request": {
             "method": "POST",
             "header": [
@@ -135,7 +135,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"David Miller\",\n  \"email\": \"david.staff@crm.com\",\n  \"password\": \"Staff@123\",\n  \"role\": \"staff\",\n  \"phone\": \"+1 555-0155\"\n}"
+              "raw": "{\n  \"name\": \"Amit Verma\",\n  \"email\": \"amit.staff@crm.com\",\n  \"password\": \"Staff@123\",\n  \"role\": \"staff\",\n  \"phone\": \"+91 98334 56789\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/auth/register",
@@ -202,7 +202,7 @@
           }
         },
         {
-          "name": "Search Customers by Name / Company / Email",
+          "name": "Search Customers by Name / Company / Email (e.g. Bharat)",
           "request": {
             "method": "GET",
             "header": [
@@ -212,11 +212,11 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/customers?search=logistics",
+              "raw": "{{baseUrl}}/customers?search=Bharat",
               "host": ["{{baseUrl}}"],
               "path": ["customers"],
               "query": [
-                { "key": "search", "value": "logistics" }
+                { "key": "search", "value": "Bharat" }
               ]
             }
           }
@@ -320,7 +320,7 @@
           }
         },
         {
-          "name": "Create New Customer",
+          "name": "Create New Customer (Indian Enterprise)",
           "request": {
             "method": "POST",
             "header": [
@@ -335,7 +335,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Summit Peak Equipment\",\n  \"email\": \"procurement@summitpeak.com\",\n  \"phone\": \"+1 303-555-0145\",\n  \"company\": \"Summit Peak Outfitting Co.\",\n  \"tags\": [\"Wholesale\", \"Outdoor\", \"Retail\"],\n  \"status\": \"lead\",\n  \"notes\": \"Met at Outdoor Retailer Expo 2026. Interested in private-label goods.\"\n}"
+              "raw": "{\n  \"name\": \"Himalaya Wellness Corp\",\n  \"email\": \"orders@himalayawellness.in\",\n  \"phone\": \"+91 94120 55667\",\n  \"company\": \"Himalaya Wellness Group (Dehradun)\",\n  \"tags\": [\"Wholesale\", \"Healthcare\", \"Ayurveda\"],\n  \"status\": \"lead\",\n  \"notes\": \"Met at Ayush Wellness Expo 2026. Interested in bulk eco packaging.\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/customers",
@@ -377,7 +377,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"status\": \"active\",\n  \"tags\": [\"VIP\", \"Wholesale\", \"Key-Account\"],\n  \"notes\": \"Upgraded to active key account status following contract signing.\"\n}"
+              "raw": "{\n  \"status\": \"active\",\n  \"tags\": [\"VIP\", \"Wholesale\", \"Key-Account\"],\n  \"notes\": \"Upgraded to active key account following GST contract signing.\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/customers/{{customerId}}",
@@ -438,14 +438,14 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"type\": \"meeting\",\n  \"summary\": \"Executive Q2 Strategy and Order Finalization\",\n  \"details\": \"Discussed delivery timelines and warehouse integration. Agreement reached on all points.\",\n  \"outcome\": \"successful\"\n}"
+              "raw": "{\n  \"type\": \"meeting\",\n  \"summary\": \"Annual GST Contract Renewal & Expansion Checkpoint\",\n  \"details\": \"Discussed transit timetable for Bhiwandi distribution hub. 20% volume growth agreed.\",\n  \"outcome\": \"successful\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/customers/{{customerId}}/interactions",
               "host": ["{{baseUrl}}"],
               "path": ["customers", "{{customerId}}", "interactions"]
             },
-            "description": "Logs an interaction for the specified customer. Automatically updates the customer's lastContactDate."
+            "description": "Logs an interaction for the specified customer. Automatically updates the customer's lastContactDate via Mongoose post-save hook."
           }
         },
         {
@@ -488,7 +488,7 @@
       "name": "04 - Purchases",
       "item": [
         {
-          "name": "Record Customer Purchase",
+          "name": "Record Customer Purchase (In Rupees ₹)",
           "request": {
             "method": "POST",
             "header": [
@@ -503,7 +503,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"amount\": 3500,\n  \"items\": [\n    {\n      \"name\": \"Cloud CRM Enterprise Integration Module\",\n      \"quantity\": 1,\n      \"unitPrice\": 2500\n    },\n    {\n      \"name\": \"Dedicated Onboarding Training Package\",\n      \"quantity\": 1,\n      \"unitPrice\": 1000\n    }\n  ],\n  \"paymentMethod\": \"bank_transfer\",\n  \"paymentStatus\": \"paid\",\n  \"notes\": \"Wire transfer received and verified.\"\n}"
+              "raw": "{\n  \"amount\": 125000,\n  \"items\": [\n    {\n      \"name\": \"Fleet GPS Gateway Sensors (Pack of 25)\",\n      \"quantity\": 25,\n      \"unitPrice\": 5000\n    }\n  ],\n  \"paymentMethod\": \"upi\",\n  \"paymentStatus\": \"paid\",\n  \"notes\": \"Settled via UPI / HDFC Bank transaction ID verified.\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/customers/{{customerId}}/purchases",
@@ -570,7 +570,7 @@
               "host": ["{{baseUrl}}"],
               "path": ["sales-summary"]
             },
-            "description": "Authorized request: Owner gets full company metrics, per-customer aggregation totals, monthly trends, and payment method breakdowns."
+            "description": "Authorized request: Owner gets full company metrics, per-customer aggregation totals (in INR ₹), monthly trends, and payment method breakdowns."
           }
         },
         {

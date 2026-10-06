@@ -114,7 +114,7 @@ export default function CustomerModal({ customer, onClose, onSaved }) {
             <input
               type="text"
               required
-              placeholder="e.g. Apex Global Logistics"
+              placeholder="e.g. Bharat Logistics Pvt Ltd"
               value={name}
               onChange={(e) => setName(e.target.value)}
               style={{ width: '100%' }}
@@ -129,7 +129,7 @@ export default function CustomerModal({ customer, onClose, onSaved }) {
               <input
                 type="email"
                 required
-                placeholder="procurement@apex.com"
+                placeholder="procurement@bharatlogistics.in"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 style={{ width: '100%' }}
@@ -141,7 +141,7 @@ export default function CustomerModal({ customer, onClose, onSaved }) {
               </label>
               <input
                 type="text"
-                placeholder="+1 800-555-0101"
+                placeholder="+91 98200 11223"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 style={{ width: '100%' }}
@@ -156,7 +156,7 @@ export default function CustomerModal({ customer, onClose, onSaved }) {
               </label>
               <input
                 type="text"
-                placeholder="Apex Logistics LLC"
+                placeholder="Bharat Logistics Group (Mumbai)"
                 value={company}
                 onChange={(e) => setCompany(e.target.value)}
                 style={{ width: '100%' }}

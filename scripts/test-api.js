@@ -85,7 +85,7 @@ const runTests = async () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       },
-      { email: 'sarah.staff@crm.com', password: 'Staff@123' }
+      { email: 'priya.staff@crm.com', password: 'Staff@123' }
     );
     assert(staffLogin.status === 200 && staffLogin.data.data.token, 'POST /api/auth/login succeeds for Staff');
     const staffToken = staffLogin.data.data.token;
@@ -126,13 +126,13 @@ const runTests = async () => {
     // Test 5: Customer Search and Filtering
     console.log('\n5. Customer Search, Tag Filtering, and Sorting:');
     const searchRes = await makeRequest(server, {
-      path: '/api/customers?search=Apex',
+      path: '/api/customers?search=Bharat',
       headers: { Authorization: `Bearer ${staffToken}` },
     });
     assert(
       searchRes.status === 200 &&
-        searchRes.data.data.customers.some((c) => c.name.includes('Apex')),
-      'GET /api/customers?search=Apex filters by keyword'
+        searchRes.data.data.customers.some((c) => c.name.includes('Bharat')),
+      'GET /api/customers?search=Bharat filters by keyword'
     );
 
     const tagRes = await makeRequest(server, {
@@ -167,10 +167,10 @@ const runTests = async () => {
         },
       },
       {
-        name: 'Automated Test Client',
-        email: `testclient_${Date.now()}@domain.com`,
-        phone: '+1 555-9999',
-        company: 'Automated Tests Inc.',
+        name: 'Ananya Roy (Bengaluru Innovations)',
+        email: `ananya.roy_${Date.now()}@domain.com`,
+        phone: '+91 98765 43210',
+        company: 'Bengaluru Innovations Pvt Ltd',
         tags: ['Automated', 'TestTag'],
         status: 'lead',
         notes: 'Created by automated test suite',
@@ -183,7 +183,7 @@ const runTests = async () => {
       path: `/api/customers/${testCustomerId}`,
       headers: { Authorization: `Bearer ${staffToken}` },
     });
-    assert(getCustRes.status === 200 && getCustRes.data.data.customer.name === 'Automated Test Client', 'GET /api/customers/:id retrieves customer details');
+    assert(getCustRes.status === 200 && getCustRes.data.data.customer.name.includes('Ananya Roy'), 'GET /api/customers/:id retrieves customer details');
 
     const updateCustRes = await makeRequest(
       server,

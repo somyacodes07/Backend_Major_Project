@@ -315,7 +315,7 @@ export default function CustomerList({ onSelectCustomer, onAddNewCustomer }) {
                 <div>
                   <span className="mono-meta" style={{ display: 'block', fontSize: '0.68rem' }}>SPEND TOTAL</span>
                   <span className="tabular" style={{ fontSize: '1.05rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-                    ${(c.totalSpent || 0).toLocaleString()}
+                    ₹{(c.totalSpent || 0).toLocaleString('en-IN')}
                   </span>
                 </div>
 

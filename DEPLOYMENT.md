@@ -54,7 +54,7 @@
 3. Configure:
    - **Authentication Method:** Password
    - **Username:** `crm_admin`
-   - **Password:** Autogenerate or type a strong password (e.g., `CrmSecurePass2026!`).
+   - **Password:** Autogenerate or type a strong password.
      > ⚠️ *Avoid reserved characters (`@`, `:`, `/`) in passwords to prevent URL-encoding connection errors.*
    - **User Privileges:** Select **"Read and write to any database"** (or Atlas admin).
 4. Click **"Add User"**.
@@ -82,7 +82,7 @@ Cloud hosts like Render and Railway assign dynamic IP addresses. You must allow 
    ```
 6. Replace `<password>` with your database password, and specify the database name `crm_database` before the query parameters:
    ```text
-   mongodb+srv://crm_admin:CrmSecurePass2026!@crm-cluster.xxxx.mongodb.net/crm_database?retryWrites=true&w=majority
+   mongodb+srv://crm_admin:<your_password>@crm-cluster.xxxx.mongodb.net/crm_database?retryWrites=true&w=majority
    ```
 
 ---
@@ -143,8 +143,8 @@ Scroll to **"Environment Variables"** and add:
 | Key | Value | Notes |
 | :--- | :--- | :--- |
 | `NODE_ENV` | `production` | Enables production optimizations |
-| `MONGODB_URI` | `mongodb+srv://crm_admin:YourPass@...` | Atlas connection string from Part 1 |
-| `JWT_SECRET` | `crm_super_secure_jwt_secret_key_prod_2026_xyz987` | Strong 32+ char secret |
+| `MONGODB_URI` | `mongodb+srv://<username>:<password>@...` | Atlas connection string from Part 1 |
+| `JWT_SECRET` | `<your_jwt_secret_key_here>` | Generate a secure random 32+ character string |
 | `JWT_EXPIRES_IN` | `7d` | Token validity |
 | `CLIENT_URL` | `*` | Or specify frontend domain once deployed |
 
@@ -190,7 +190,7 @@ Populate Atlas with realistic customers, interactions, and purchase transactions
 ### Method 1: Local Terminal (Fastest)
 1. Open your local `.env` file and set `MONGODB_URI` to your Atlas string:
    ```env
-   MONGODB_URI=mongodb+srv://crm_admin:YourPass@cluster0.xxx.mongodb.net/crm_database?retryWrites=true&w=majority
+   MONGODB_URI=mongodb+srv://<username>:<password>@<cluster-url>/crm_database?retryWrites=true&w=majority
    ```
 2. Run the seed script:
    ```bash

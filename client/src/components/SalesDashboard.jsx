@@ -72,7 +72,7 @@ export default function SalesDashboard({ user, onSwitchToOwner }) {
 
         {onSwitchToOwner && (
           <button onClick={onSwitchToOwner} className="btn btn-primary btn-sm" style={{ width: '100%' }}>
-            Switch to Owner Session (Eleanor Vance) <ArrowRight size={13} />
+            Switch to Owner Session (Rajesh Sharma) <ArrowRight size={13} />
           </button>
         )}
       </div>
@@ -138,7 +138,7 @@ export default function SalesDashboard({ user, onSwitchToOwner }) {
         <div className="card-hairline" style={{ padding: '16px 20px' }}>
           <span className="mono-meta" style={{ display: 'block' }}>GROSS REVENUE</span>
           <div className="tabular" style={{ fontSize: '1.7rem', fontWeight: 600, marginTop: '4px' }}>
-            ${(overview.totalRevenue || 0).toLocaleString()}
+            ₹{(overview.totalRevenue || 0).toLocaleString('en-IN')}
           </div>
           <span className="mono-meta" style={{ display: 'block', marginTop: '2px', fontSize: '0.7rem' }}>
             Settled paid invoices
@@ -158,7 +158,7 @@ export default function SalesDashboard({ user, onSwitchToOwner }) {
         <div className="card-hairline" style={{ padding: '16px 20px' }}>
           <span className="mono-meta" style={{ display: 'block' }}>AVG ORDER VALUE</span>
           <div className="tabular" style={{ fontSize: '1.7rem', fontWeight: 600, marginTop: '4px' }}>
-            ${(overview.averageTransactionValue || 0).toLocaleString()}
+            ₹{(overview.averageTransactionValue || 0).toLocaleString('en-IN')}
           </div>
           <span className="mono-meta" style={{ display: 'block', marginTop: '2px', fontSize: '0.7rem' }}>
             Calculated arithmetic mean
@@ -220,10 +220,10 @@ export default function SalesDashboard({ user, onSwitchToOwner }) {
                     {item.purchaseCount}
                   </td>
                   <td className="tabular" style={{ textAlign: 'right', color: 'var(--text-secondary)' }}>
-                    ${(item.averageOrderValue || 0).toLocaleString()}
+                    ₹{(item.averageOrderValue || 0).toLocaleString('en-IN')}
                   </td>
                   <td className="tabular" style={{ textAlign: 'right', fontWeight: 600, color: 'var(--text-primary)' }}>
-                    ${(item.totalSpent || 0).toLocaleString()}
+                    ₹{(item.totalSpent || 0).toLocaleString('en-IN')}
                   </td>
                 </tr>
               ))}
@@ -260,7 +260,7 @@ export default function SalesDashboard({ user, onSwitchToOwner }) {
                 </div>
 
                 <span className="tabular" style={{ fontSize: '0.95rem', fontWeight: 600 }}>
-                  ${(pm.totalAmount || 0).toLocaleString()}
+                  ₹{(pm.totalAmount || 0).toLocaleString('en-IN')}
                 </span>
               </div>
             ))}
@@ -289,7 +289,7 @@ export default function SalesDashboard({ user, onSwitchToOwner }) {
 
                 <div style={{ textAlign: 'right' }}>
                   <span className="tabular" style={{ fontSize: '0.95rem', fontWeight: 600 }}>
-                    ${(trend.monthlyRevenue || 0).toLocaleString()}
+                    ₹{(trend.monthlyRevenue || 0).toLocaleString('en-IN')}
                   </span>
                   <span className="mono-meta" style={{ display: 'block', fontSize: '0.7rem' }}>
                     {trend.orderCount} orders

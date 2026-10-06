@@ -324,7 +324,7 @@ Ensure your `.env` contains:
 PORT=5000
 NODE_ENV=development
 MONGODB_URI=mongodb://127.0.0.1:27017/crm_db
-JWT_SECRET=super_secret_crm_jwt_access_key_change_in_production_2026
+JWT_SECRET=your_jwt_secret_key_here
 JWT_EXPIRES_IN=7d
 CLIENT_URL=http://localhost:3000,http://localhost:5173
 ```

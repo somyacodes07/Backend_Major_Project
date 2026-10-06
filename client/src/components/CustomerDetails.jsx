@@ -207,7 +207,7 @@ export default function CustomerDetails({ customerId, onBack, onEditCustomer, on
             }}>
               <span className="mono-meta" style={{ display: 'block' }}>TOTAL SPENT</span>
               <span className="tabular" style={{ fontSize: '1.3rem', fontWeight: 600 }}>
-                ${(customer.totalSpent || 0).toLocaleString()}
+                ₹{(customer.totalSpent || 0).toLocaleString('en-IN')}
               </span>
             </div>
 
@@ -362,7 +362,7 @@ export default function CustomerDetails({ customerId, onBack, onEditCustomer, on
                       {p.invoiceNumber}
                     </span>
                     <span className="tabular" style={{ fontSize: '0.95rem', fontWeight: 600 }}>
-                      ${p.amount.toLocaleString()}
+                      ₹{p.amount.toLocaleString('en-IN')}
                     </span>
                   </div>
 
@@ -370,7 +370,7 @@ export default function CustomerDetails({ customerId, onBack, onEditCustomer, on
                     <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
                       {p.items.map((it, idx) => (
                         <div key={idx} className="mono-meta">
-                          {it.quantity}x {it.name} (${it.unitPrice})
+                          {it.quantity}x {it.name} (₹{it.unitPrice.toLocaleString('en-IN')})
                         </div>
                       ))}
                     </div>
@@ -473,7 +473,7 @@ export default function CustomerDetails({ customerId, onBack, onEditCustomer, on
             </div>
             <form onSubmit={handleRecordPurchaseSubmit} style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-secondary)', marginBottom: '5px' }}>Invoice Amount ($) *</label>
+                <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-secondary)', marginBottom: '5px' }}>Invoice Amount (₹) *</label>
                 <input
                   type="number"
                   step="0.01"

@@ -126,18 +126,18 @@ export default function AuthModal({ onAuthSuccess }) {
               className="btn btn-secondary btn-sm"
               style={{ justifyContent: 'space-between', width: '100%' }}
             >
-              <span>Owner: Eleanor Vance</span>
-              <span className="mono-meta">Full Access →</span>
+              <span>Owner: Rajesh Sharma</span>
+              <span className="mono-meta">Full Access &rarr;</span>
             </button>
             <button
               type="button"
-              onClick={() => handleQuickLogin('sarah.staff@crm.com', 'Staff@123')}
+              onClick={() => handleQuickLogin('priya.staff@crm.com', 'Staff@123')}
               disabled={loading}
               className="btn btn-secondary btn-sm"
               style={{ justifyContent: 'space-between', width: '100%' }}
             >
-              <span>Staff: Sarah Jenkins</span>
-              <span className="mono-meta">Restricted →</span>
+              <span>Staff: Priya Patel</span>
+              <span className="mono-meta">Restricted &rarr;</span>
             </button>
           </div>
         </div>
